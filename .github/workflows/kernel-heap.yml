@@ -1,0 +1,19 @@
+name: Kernel heap
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  heap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Heap tests with sanitizers
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/memory/heap.c tests/heap_test.c -o /tmp/aion-heap-test
+          /tmp/aion-heap-test
+      - name: Freestanding cross-architecture compilation
+        run: |
+          clang --target=x86_64-none-elf -ffreestanding -Wall -Wextra -Werror -c kernel/memory/heap.c -o /tmp/heap-x86.o
+          clang --target=aarch64-none-elf -ffreestanding -Wall -Wextra -Werror -c kernel/memory/heap.c -o /tmp/heap-arm.o
