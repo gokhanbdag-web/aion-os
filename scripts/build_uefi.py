@@ -29,10 +29,15 @@ def main():
             "-o", str(output.with_suffix(".obj")),
         ]
         subprocess.run(cmd, check=True)
+        diag_obj = output.with_name("diagnostics.obj")
+        subprocess.run(["clang", f"--target={target}", "-ffreestanding",
+                        "-fshort-wchar", "-fno-stack-protector", "-fno-builtin",
+                        "-c", str(ROOT / "boot/uefi/diagnostics.c"),
+                        "-o", str(diag_obj)], check=True)
         subprocess.run([
             "lld-link", "/nologo", "/subsystem:efi_application",
             "/entry:efi_main", "/nodefaultlib",
-            f"/out:{output}", str(output.with_suffix(".obj")),
+            f"/out:{output}", str(output.with_suffix(".obj")), str(diag_obj),
         ], check=True)
         if output.read_bytes()[:2] != b"MZ":
             raise SystemExit(f"Invalid PE image: {output}")
