@@ -1,0 +1,20 @@
+name: AION FS foundation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  filesystem:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Filesystem host tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/storage/block.c kernel/storage/aionfs.c tests/aionfs_test.c -o /tmp/aion-fs-test
+          /tmp/aion-fs-test
+      - name: Freestanding architecture checks
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/storage/aionfs.c -o /tmp/aion-fs-"$target".o
+          done
