@@ -1,0 +1,20 @@
+name: MBR partition parsing
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  partitions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host MBR tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/storage/block.c kernel/storage/partition.c tests/partition_test.c -o /tmp/aion-partition-test
+          /tmp/aion-partition-test
+      - name: Freestanding cross-build
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/storage/partition.c -o /tmp/aion-partition-"$target".o
+          done
