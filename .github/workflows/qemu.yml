@@ -1,0 +1,18 @@
+name: QEMU firmware entry smoke
+on:
+  push:
+  pull_request:
+jobs:
+  qemu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install firmware and emulators
+        run: sudo apt-get update && sudo apt-get install -y clang lld qemu-system-x86 qemu-system-arm ovmf qemu-efi-aarch64
+      - name: Cross-build EFI images
+        run: python3 scripts/build_uefi.py --arch all
+      - name: x86-64 firmware smoke
+        run: python3 scripts/qemu_uefi_smoke.py --arch x86_64 --timeout 25
+      - name: ARM64 firmware smoke
+        run: python3 scripts/qemu_uefi_smoke.py --arch aarch64 --timeout 25
