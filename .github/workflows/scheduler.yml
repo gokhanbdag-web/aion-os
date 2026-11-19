@@ -1,0 +1,20 @@
+name: Round-robin scheduler
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  scheduler:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scheduler host tests with UBSan
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/task/task.c kernel/task/scheduler.c tests/scheduler_test.c -o /tmp/aion-scheduler-test
+          /tmp/aion-scheduler-test
+      - name: Freestanding x86-64 and ARM64 compilation
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/task/scheduler.c -o /tmp/scheduler-"$target".o
+          done
