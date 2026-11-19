@@ -1,3 +1,4 @@
+#include "../../kernel/arch/cpu.h"
 #include "diagnostics.h"
 /* AION OS 1.4: firmware entry emits an explicit guest boot marker.
  * x86-64: QEMU debugcon at I/O port 0xe9.
@@ -24,6 +25,12 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
     const char *p = BOOT_MARKER;
     while (*p) emit(*p++);
     emit('\n');
+    struct aion_cpu_info cpu;
+    if (aion_cpu_probe(&cpu) != 0) {
+        aion_diag_event("cpu", "unsupported");
+        return EFI_INVALID_PARAMETER;
+    }
+    aion_diag_event("cpu", "ready");
     aion_diag_event("uefi", "ready");
     return EFI_SUCCESS;
 }

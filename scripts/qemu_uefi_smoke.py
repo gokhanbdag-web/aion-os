@@ -50,7 +50,7 @@ def main():
             output = (exc.stdout or b"") + (exc.stderr or b"")
             if isinstance(output, bytes):
                 output = output.decode("utf-8", errors="replace")
-            if "AION_UEFI_ENTRY_OK" not in output or "AION_DIAG:uefi:ready" not in output:
+            if "AION_UEFI_ENTRY_OK" not in output or "AION_DIAG:uefi:ready" not in output or "AION_DIAG:cpu:ready" not in output:
                 raise SystemExit(f"FAIL: {arch} timed out without guest marker") from exc
             print(f"PASS: {arch} firmware entry marker observed")
             return
