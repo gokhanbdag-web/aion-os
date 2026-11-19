@@ -20,9 +20,9 @@ int aion_pmm_init(struct aion_pmm *p, const struct aion_memory_region *map, size
             if (overlap(start,start+length,map[j].start,map[j].start+map[j].length)) return -1;
         if (map[i].kind != AION_PMM_FREE && map[i].kind != AION_PMM_RESERVED) return -1;
         if (map[i].kind == AION_PMM_FREE) {
+            if (start > MAX_U64-(AION_PAGE_SIZE-1)) return -1;
             uint64_t aligned = (start + (AION_PAGE_SIZE-1)) & ~(AION_PAGE_SIZE-1);
             uint64_t end = (start+length) & ~(AION_PAGE_SIZE-1);
-            if (start > MAX_U64-(AION_PAGE_SIZE-1)) return -1;
             if (end <= aligned) continue;
             start = aligned; length = end-aligned;
             p->free_pages += length / AION_PAGE_SIZE;
