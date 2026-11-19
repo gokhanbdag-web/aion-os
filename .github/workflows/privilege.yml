@@ -1,0 +1,20 @@
+name: Privilege boundary policy
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  privilege:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Privilege host tests with UBSan
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/security/privilege.c tests/privilege_test.c -o /tmp/aion-privilege-test
+          /tmp/aion-privilege-test
+      - name: Freestanding cross-architecture compilation
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/security/privilege.c -o /tmp/privilege-"$target".o
+          done
