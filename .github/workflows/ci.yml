@@ -1,0 +1,51 @@
+name: AION integrated CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: aion-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate repository structure
+        run: python3 scripts/validate_structure.py
+      - name: Validate diagnostics
+        run: python3 -m unittest discover -s tests -p 'test_diagnostics.py' -v
+      - name: Validate Python scripts
+        run: python3 -m compileall -q scripts tests
+      - name: Validate CI contract
+        run: python3 scripts/validate_ci.py
+  firmware:
+    needs: source
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU and UEFI toolchain
+        run: sudo apt-get update && sudo apt-get install -y clang lld qemu-system-x86 qemu-system-arm ovmf qemu-efi-aarch64
+      - name: Build firmware
+        run: python3 scripts/build_uefi.py --arch ${{ matrix.arch }}
+      - name: Verify guest execution
+        run: python3 scripts/qemu_uefi_smoke.py --arch ${{ matrix.arch }} --timeout 25
+  gate:
+    if: always()
+    needs: [source, firmware]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce required jobs
+        env:
+          SOURCE_RESULT: ${{ needs.source.result }}
+          FIRMWARE_RESULT: ${{ needs.firmware.result }}
+        run: |
+          test "$SOURCE_RESULT" = success
+          test "$FIRMWARE_RESULT" = success
