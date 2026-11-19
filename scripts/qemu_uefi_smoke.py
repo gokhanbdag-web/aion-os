@@ -31,7 +31,8 @@ def main():
             if not firmware:
                 parser.error("Install ovmf firmware")
             cmd = [exe, "-machine", "q35", "-m", "256M", "-nographic",
-                   "-monitor", "none", "-serial", "stdio",
+                   "-monitor", "none", "-serial", "none",
+                   "-debugcon", "stdio", "-global", "isa-debugcon.iobase=0xe9",
                    "-bios", firmware, "-drive", f"format=raw,file=fat:rw:{tmp}"]
         else:
             firmware = "/usr/share/AAVMF/AAVMF_CODE.fd"
@@ -45,13 +46,17 @@ def main():
             result = subprocess.run(cmd, capture_output=True, text=True,
                                     timeout=args.timeout, check=False)
         except subprocess.TimeoutExpired as exc:
-            # A firmware run that hangs without an explicit success signal is NOT a pass.
-            print(f"INCONCLUSIVE: {arch} QEMU timed out without guest success signal")
-            raise SystemExit(1) from exc
-        print((result.stdout + result.stderr)[-3000:])
-        if result.returncode:
-            raise SystemExit(f"FAIL: QEMU exited {result.returncode}")
-        print(f"PASS: {arch} QEMU process exited successfully")
+            output = (exc.stdout or b"") + (exc.stderr or b"")
+            if isinstance(output, bytes):
+                output = output.decode("utf-8", errors="replace")
+            if "AION_UEFI_ENTRY_OK" not in output:
+                raise SystemExit(f"FAIL: {arch} timed out without guest marker") from exc
+            print(f"PASS: {arch} firmware entry marker observed")
+            return
+        output = result.stdout + result.stderr
+        if "AION_UEFI_ENTRY_OK" not in output:
+            raise SystemExit(f"FAIL: {arch} no guest marker (exit={result.returncode})")
+        print(f"PASS: {arch} firmware entry marker observed")
 
 if __name__ == "__main__":
     main()
