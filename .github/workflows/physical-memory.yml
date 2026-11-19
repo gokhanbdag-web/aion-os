@@ -1,0 +1,19 @@
+name: Physical memory manager
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  pmm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host physical memory tests with sanitizers
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/memory/physical.c tests/pmm_test.c -o /tmp/aion-pmm-test
+          /tmp/aion-pmm-test
+      - name: Freestanding x86-64 and ARM64 compilation
+        run: |
+          clang --target=x86_64-none-elf -ffreestanding -Wall -Wextra -Werror -c kernel/memory/physical.c -o /tmp/pmm-x86.o
+          clang --target=aarch64-none-elf -ffreestanding -Wall -Wextra -Werror -c kernel/memory/physical.c -o /tmp/pmm-arm.o
