@@ -1,0 +1,13 @@
+name: UEFI cross-build
+on:
+  push:
+  pull_request:
+jobs:
+  uefi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LLVM
+        run: sudo apt-get update && sudo apt-get install -y clang lld
+      - name: Build both UEFI targets
+        run: python3 scripts/build_uefi.py --arch all
