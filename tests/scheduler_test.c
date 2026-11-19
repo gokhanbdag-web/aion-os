@@ -28,12 +28,13 @@ int main(void) {
         if (next==ids[2]) seen++;
     }
     assert(seen==2);
+    uint64_t exited_id=next;
     assert(aion_scheduler_exit_current(&s)==0);
-    assert(aion_task_find(&table,next)->state==AION_TASK_EXITED);
-    assert(aion_task_reap(&table,next)==0);
+    assert(aion_task_find(&table,exited_id)->state==AION_TASK_EXITED);
+    assert(aion_task_reap(&table,exited_id)==0);
     for (unsigned i=0;i<20;i++) {
         assert(aion_scheduler_next(&s,&next)==0);
-        assert(next!=ids[2]);
+        assert(next!=exited_id);
     }
     return 0;
 }
