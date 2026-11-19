@@ -1,0 +1,17 @@
+name: Memory and CPU stress
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile stress harness with sanitizers
+        run: |
+          cc -std=c11 -O1 -g -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all kernel/memory/heap.c kernel/memory/virtual.c kernel/arch/smp.c tests/memory_cpu_stress.c -o /tmp/aion-memory-cpu-stress
+      - name: Run deterministic stress tests
+        run: /tmp/aion-memory-cpu-stress
