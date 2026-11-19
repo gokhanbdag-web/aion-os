@@ -1,0 +1,20 @@
+name: AION FS metadata
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Metadata tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/storage/block.c kernel/storage/aionfs.c kernel/storage/aionfs_metadata.c tests/aionfs_metadata_test.c -o /tmp/aionfs-metadata-test
+          /tmp/aionfs-metadata-test
+      - name: Cross-architecture compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/storage/aionfs_metadata.c -o /tmp/aionfs-meta-"$target".o
+          done
