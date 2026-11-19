@@ -1,0 +1,22 @@
+name: Isolation policy regression
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Policy boundary regression tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/security/privilege.c kernel/syscall/syscall.c kernel/ipc/ipc.c tests/isolation_test.c -o /tmp/aion-isolation-test
+          /tmp/aion-isolation-test
+      - name: Freestanding x86-64 and ARM64 compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            for source in kernel/security/privilege.c kernel/syscall/syscall.c kernel/ipc/ipc.c; do
+              clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c "$source" -o /tmp/"$(basename "$source" .c)"-"$target".o
+            done
+          done
