@@ -1,0 +1,11 @@
+name: Early boot diagnostics
+on:
+  push:
+  pull_request:
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate diagnostic interfaces
+        run: python3 -m unittest discover -s tests -p 'test_diagnostics.py' -v
