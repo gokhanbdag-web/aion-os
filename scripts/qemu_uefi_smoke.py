@@ -55,6 +55,7 @@ def main():
             return
         output = result.stdout + result.stderr
         if "AION_UEFI_ENTRY_OK" not in output:
+            print(output[-4000:])
             raise SystemExit(f"FAIL: {arch} no guest marker (exit={result.returncode})")
         print(f"PASS: {arch} firmware entry marker observed")
 
