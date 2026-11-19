@@ -1,0 +1,20 @@
+name: AION FS integrity
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: CRC and corruption detection tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/storage/block.c kernel/storage/aionfs.c kernel/storage/aionfs_integrity.c tests/aionfs_integrity_test.c -o /tmp/aionfs-integrity-test
+          /tmp/aionfs-integrity-test
+      - name: Freestanding cross-architecture compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/storage/aionfs_integrity.c -o /tmp/aionfs-integrity-"$target".o
+          done
