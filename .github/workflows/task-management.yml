@@ -1,0 +1,19 @@
+name: Task management
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tasks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Task lifecycle tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/task/task.c tests/task_test.c -o /tmp/aion-task-test
+          /tmp/aion-task-test
+      - name: Freestanding x86-64 and ARM64 compilation
+        run: |
+          clang --target=x86_64-none-elf -ffreestanding -Wall -Wextra -Werror -c kernel/task/task.c -o /tmp/task-x86.o
+          clang --target=aarch64-none-elf -ffreestanding -Wall -Wextra -Werror -c kernel/task/task.c -o /tmp/task-arm.o
