@@ -10,4 +10,4 @@ python3 scripts/qemu_uefi_smoke.py --arch x86_64
 python3 scripts/qemu_uefi_smoke.py --arch aarch64
 ```
 
-The current 1.3 EFI entrypoint returns to firmware. It has no serial or other guest-side success handshake; therefore an automated boot **pass cannot be claimed yet**. A follow-up in this milestone must add an explicit guest success signal before enabling passing CI boot tests.
+The 1.4 EFI entrypoint emits `AION_UEFI_ENTRY_OK` via x86-64 QEMU debugcon or ARM64 PL011 UART. The harness requires that marker even if firmware remains running until timeout. This verifies firmware executed our EFI entrypoint, **not** kernel startup, graphics, or an installed OS.
