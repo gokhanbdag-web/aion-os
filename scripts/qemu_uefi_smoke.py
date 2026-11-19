@@ -33,7 +33,8 @@ def main():
             cmd = [exe, "-machine", "q35", "-m", "256M", "-nographic",
                    "-monitor", "none", "-serial", "none",
                    "-debugcon", "stdio", "-global", "isa-debugcon.iobase=0xe9",
-                   "-bios", firmware, "-drive", f"format=raw,file=fat:rw:{tmp}"]
+                   "-drive", f"if=pflash,format=raw,readonly=on,file={firmware}",
+                   "-drive", f"format=raw,file=fat:rw:{tmp}"]
         else:
             firmware = "/usr/share/AAVMF/AAVMF_CODE.fd"
             if not pathlib.Path(firmware).exists():
