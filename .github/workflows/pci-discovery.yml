@@ -1,0 +1,20 @@
+name: PCI discovery
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  pci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PCI enumeration tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/hardware/pci.c tests/pci_test.c -o /tmp/aion-pci-test
+          /tmp/aion-pci-test
+      - name: Freestanding cross-architecture compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/hardware/pci.c -o /tmp/aion-pci-"$target".o
+          done
