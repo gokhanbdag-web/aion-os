@@ -3,7 +3,7 @@ static void w32(uint8_t *p,uint32_t n){unsigned i;for(i=0;i<4;i++)p[i]=(uint8_t)
 static void w64(uint8_t *p,uint64_t n){unsigned i;for(i=0;i<8;i++)p[i]=(uint8_t)(n>>(i*8));}
 static uint32_t r32(const uint8_t *p){uint32_t n=0;int i;for(i=3;i>=0;i--)n=(n<<8)|p[i];return n;}
 static uint64_t r64(const uint8_t *p){uint64_t n=0;int i;for(i=7;i>=0;i--)n=(n<<8)|p[i];return n;}
-static int name_length(const char *s){int i;if(!s)return -1;for(i=0;i<AION_FS_NAME_MAX;i++){if(!s[i])return i;}return -1;}
+static int name_length(const char *s){unsigned i;if(!s)return -1;for(i=0;i<AION_FS_NAME_MAX;i++){if(!s[i])return (int)i;}return -1;}
 static int same(const char *a,const char *b){unsigned i;for(i=0;i<AION_FS_NAME_MAX;i++){if(a[i]!=b[i])return 0;if(!a[i])return 1;}return 0;}
 static int validate(const struct aion_fs *fs,uint64_t block,const struct aion_fs_directory *d){
     uint32_t i,j;
