@@ -1,0 +1,20 @@
+name: AION FS recovery
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verified replica recovery and corruption tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/storage/block.c kernel/storage/aionfs.c kernel/storage/aionfs_integrity.c kernel/storage/aionfs_recovery.c tests/aionfs_recovery_test.c -o /tmp/aionfs-recovery-test
+          /tmp/aionfs-recovery-test
+      - name: Freestanding cross-architecture compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/storage/aionfs_recovery.c -o /tmp/aionfs-recovery-"$target".o
+          done
