@@ -1,0 +1,20 @@
+name: DNS DHCP foundation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  dns-dhcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: DNS DHCP parser tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/network/dns_dhcp.c tests/dns_dhcp_test.c -o /tmp/aion-dns-dhcp-test
+          /tmp/aion-dns-dhcp-test
+      - name: Freestanding x86-64 and ARM64 compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/network/dns_dhcp.c -o /tmp/aion-dns-dhcp-"$target".o
+          done
