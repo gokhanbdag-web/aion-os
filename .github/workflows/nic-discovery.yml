@@ -1,0 +1,20 @@
+name: NIC discovery
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  nic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: NIC inventory tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/network/nic.c tests/nic_test.c -o /tmp/aion-nic-test
+          /tmp/aion-nic-test
+      - name: Freestanding cross-architecture compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/network/nic.c -o /tmp/aion-nic-"$target".o
+          done
