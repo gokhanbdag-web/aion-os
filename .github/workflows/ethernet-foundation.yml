@@ -1,0 +1,20 @@
+name: Ethernet foundation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  ethernet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ethernet framing and VLAN tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/network/ethernet.c tests/ethernet_test.c -o /tmp/aion-ethernet-test
+          /tmp/aion-ethernet-test
+      - name: Freestanding cross-architecture compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/network/ethernet.c -o /tmp/aion-ethernet-"$target".o
+          done
