@@ -1,0 +1,20 @@
+name: Graphics and audio foundation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  media:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Framebuffer and PCM format tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/hardware/media.c tests/media_test.c -o /tmp/aion-media-test
+          /tmp/aion-media-test
+      - name: Freestanding cross-architecture compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/hardware/media.c -o /tmp/aion-media-"$target".o
+          done
