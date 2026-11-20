@@ -1,0 +1,20 @@
+name: Driver isolation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  driver-isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Driver access control tests
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsanitize=undefined -fno-sanitize-recover=all kernel/hardware/driver_isolation.c tests/driver_isolation_test.c -o /tmp/aion-driver-isolation-test
+          /tmp/aion-driver-isolation-test
+      - name: Freestanding cross-architecture compile
+        run: |
+          for target in x86_64-none-elf aarch64-none-elf; do
+            clang --target="$target" -ffreestanding -Wall -Wextra -Werror -c kernel/hardware/driver_isolation.c -o /tmp/aion-driver-isolation-"$target".o
+          done
