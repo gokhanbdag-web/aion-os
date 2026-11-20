@@ -4,7 +4,7 @@ int aion_framebuffer_validate(const struct aion_framebuffer *fb){
     size_t row,required;
     if(!fb || !fb->base || !fb->width || !fb->height || fb->stride<fb->width)return AION_MEDIA_EINVAL;
     if(fb->pixel_format!=AION_MEDIA_PIXEL_BGRA8888 && fb->pixel_format!=AION_MEDIA_PIXEL_RGBA8888)return AION_MEDIA_EINVAL;
-    if((size_t)fb->stride>SIZE_MAX/4u)return AION_MEDIA_ERANGE;
+    if((uint64_t)fb->stride>(uint64_t)SIZE_MAX/4u)return AION_MEDIA_ERANGE;
     row=(size_t)fb->stride*4u;
     if((size_t)fb->height>SIZE_MAX/row)return AION_MEDIA_ERANGE;
     required=row*(size_t)fb->height;
